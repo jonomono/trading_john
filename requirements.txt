@@ -1,0 +1,8 @@
+pandas
+numpy
+matplotlib
+ta
+ccxt
+python-binance
+yfinance
+python-dotenv
