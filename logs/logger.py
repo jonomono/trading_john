@@ -1,5 +1,3 @@
-# trading_bot/logs/logger.py
-
 import pandas as pd
 import os
 from datetime import datetime
@@ -13,15 +11,13 @@ def log_backtest_summary(
 ):
     """
     Guarda un resumen del backtest en un log acumulativo CSV.
-
-    :param strategy_name: nombre de la estrategia usada
-    :param timeframe: timeframe del análisis (ej. 30m con estructura 1D)
-    :param r_target: objetivo de R (ej. 2.0)
-    :param metrics: diccionario de métricas (winrate, avg_r, etc.)
-    :param notes: comentario opcional
     """
     summary_file = "logs/summary_log.csv"
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if not isinstance(metrics, dict):
+        print("❌ Error: las métricas no están en formato diccionario.")
+        return
 
     log_entry = {
         "timestamp": now,
@@ -37,12 +33,20 @@ def log_backtest_summary(
         "notes": notes
     }
 
-    # Crear archivo si no existe
     if not os.path.exists(summary_file):
         df_log = pd.DataFrame([log_entry])
     else:
         df_log = pd.read_csv(summary_file)
         df_log = pd.concat([df_log, pd.DataFrame([log_entry])], ignore_index=True)
 
-    df_log.to_csv(summary_file, index=False)
-    print(f"📚 Log actualizado en {summary_file}")
+    # Asegurar orden de columnas
+    column_order = list(log_entry.keys())
+    df_log = df_log[column_order]
+
+    try:
+        df_log.to_csv(summary_file, index=False)
+        print(f"📚 Log actualizado en {summary_file}")
+    except PermissionError:
+        print(f"❌ No se puede escribir en {summary_file}. ¿Está abierto en Excel?")
+    except Exception as e:
+        print(f"❌ Error inesperado al guardar log: {e}")

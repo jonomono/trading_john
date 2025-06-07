@@ -3,7 +3,7 @@
 import os
 import pandas as pd
 from live_trading.signal_executor import execute_signal
-from logs.analyzer import system_is_healthy
+from live_trading.signal_executor import system_is_healthy
 
 SIGNALS_PATH = "logs/backtest_results.csv"
 TRADE_LOG_PATH = "live_trading/trade_log.csv"

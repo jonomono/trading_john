@@ -62,4 +62,4 @@ def reset_csv_files(force_reset=False):
 
 if __name__ == "__main__":
     # Puedes activar o desactivar la sobrescritura total aquí
-    reset_csv_files(force_reset=False)
+    reset_csv_files(force_reset=True)

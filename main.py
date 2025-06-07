@@ -1,6 +1,18 @@
 # trading_bot/main.py
 
+import sys
+import os
+import time
 import pandas as pd
+
+# Añadir la raíz del proyecto al path
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+# Live trading
+from live_trading.entry_manager import evaluar_entrada
+from live_trading.exit_manager import gestionar_salidas
+
+# Backtesting
 from strategies.structure_analysis import detect_structure, classify_trend
 from strategies.entry_logic import find_entry_signals as engulfing_strategy
 from strategies.retest_entry import find_retest_entries as retest_strategy
@@ -8,8 +20,18 @@ from backtesting.simulator import backtest
 from backtesting.evaluator import evaluate_trades
 from logs.logger import log_backtest_summary
 
-def main(strategy_name="bullish_engulfing", r_target=2.0):
-    print(f"\n🚀 Ejecutando backtest con estrategia: {strategy_name}")
+def run_live_trading(interval_minutes=5):
+    print("🚀 Iniciando agente en modo REAL (simulado)")
+    while True:
+        print("🔍 Evaluando entrada...")
+        evaluar_entrada()
+        print("📤 Evaluando salidas...")
+        gestionar_salidas()
+        print(f"⏳ Esperando {interval_minutes} minutos...\n")
+        time.sleep(interval_minutes * 60)
+
+def run_backtest(strategy_name="bullish_engulfing", r_target=2.0):
+    print(f"\n🧪 Ejecutando backtest con estrategia: {strategy_name}")
 
     # 1. Cargar velas
     df_higher = pd.read_csv("data/BTC_USD_1d.csv")
@@ -55,7 +77,14 @@ def main(strategy_name="bullish_engulfing", r_target=2.0):
     for k, v in metrics.items():
         print(f"{k}: {v}")
 
+def main(modo="live", strategy_name="retest_entry", r_target=2.0):
+    if modo == "live":
+        run_live_trading()
+    elif modo == "backtest":
+        run_backtest(strategy_name=strategy_name, r_target=r_target)
+    else:
+        print("❌ Modo no reconocido. Usa 'live' o 'backtest'.")
 
 if __name__ == "__main__":
-    # Cambia aquí la estrategia a testear: 'bullish_engulfing' o 'retest_entry'
-    main(strategy_name="retest_entry", r_target=2.0)
+    # Cambia 'live' por 'backtest' según lo que quieras probar
+    main(modo="live", strategy_name="retest_entry", r_target=2.0)

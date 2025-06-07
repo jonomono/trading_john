@@ -51,22 +51,51 @@ def log_trade(data, filename="live_trading/trade_log.csv"):
         print(f"❌ Error inesperado al guardar en {filename}: {e}")
 
 
-def log_open_position(symbol, entry_price, sl, qty, order_id, filename="live_trading/open_positions.csv"):
+def log_open_position(symbol, entry_price, sl, qty, order_id, side="long", filename="live_trading/open_positions.csv"):
     """
     Registra una nueva posición abierta en open_positions.csv.
+    Evita duplicados por order_id y asegura consistencia de datos.
     """
+    from datetime import datetime, timezone
+    import csv
+    import os
+
+    def utc_now_str():
+        return datetime.now(timezone.utc).isoformat()
+
     now = utc_now_str()
+
+    # Validación de campos esenciales
+    if not all([symbol, entry_price, sl, qty, order_id]):
+        print("❌ Datos incompletos para registrar la posición.")
+        return
+
     new_row = {
         "datetime": now,
-        "symbol": symbol,
-        "entry_price": entry_price,
-        "sl": sl,
-        "qty": qty,
-        "order_id": order_id
+        "symbol": str(symbol),
+        "entry_price": float(entry_price),
+        "sl": float(sl),
+        "qty": float(qty),
+        "order_id": str(order_id),
+        "side": side
     }
 
     file_exists = os.path.isfile(filename)
 
+    # Verificación de duplicados
+    if file_exists:
+        try:
+            with open(filename, mode='r', encoding='utf-8') as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    if row.get("order_id") == str(order_id):
+                        print(f"⚠️ Ya existe una posición con order_id {order_id}. No se duplicará.")
+                        return
+        except Exception as e:
+            print(f"❌ Error leyendo para verificar duplicados: {e}")
+            return
+
+    # Escritura de la nueva posición
     try:
         with open(filename, mode='a', newline='', encoding='utf-8') as file:
             writer = csv.DictWriter(file, fieldnames=list(new_row.keys()))

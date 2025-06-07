@@ -1,11 +1,18 @@
-# live_trading/exit_manager.py
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
-import os
 from datetime import datetime
 import pytz
 from realtime.binance_feed import get_latest_price
 from live_trading.logger import log_trade
+
+# Columnas base para asegurar encabezados aunque no haya posiciones
+COLUMNAS_OPEN = [
+    "datetime", "symbol", "entry_price", "qty", "sl", "order_id", "reason"
+]
 
 def gestionar_salidas(open_path="live_trading/open_positions.csv"):
     """
@@ -22,7 +29,6 @@ def gestionar_salidas(open_path="live_trading/open_positions.csv"):
         print(f"❌ Error al leer {open_path}: {e}")
         return
 
-    # Verificación preventiva de columnas mínimas necesarias
     columnas_requeridas = ["symbol", "entry_price", "sl", "qty", "datetime", "order_id"]
     if not all(col in df_open.columns for col in columnas_requeridas):
         print(f"❌ Columnas faltantes en {open_path}. Se necesitan: {columnas_requeridas}")
@@ -66,7 +72,6 @@ def gestionar_salidas(open_path="live_trading/open_positions.csv"):
         pnl_pct = ((precio_actual / entry_price) - 1) * 100
         r_multiple = pnl_pct / abs(((sl / entry_price) - 1) * 100)
 
-        # Registro de cierre
         log_trade({
             "datetime": dt_open.isoformat(),
             "exit_time": datetime.utcnow().replace(tzinfo=pytz.UTC).isoformat(),
@@ -84,10 +89,15 @@ def gestionar_salidas(open_path="live_trading/open_positions.csv"):
 
         print(f"📤 Cerrando posición en {symbol} a {precio_actual:.8f} USDT por: {razon_salida}")
 
-    # Guardar las posiciones aún abiertas
+    # Guardar las posiciones aún abiertas asegurando cabeceras
     try:
-        df_restante = pd.DataFrame(posiciones_a_mantener)
+        if posiciones_a_mantener:
+            df_restante = pd.DataFrame(posiciones_a_mantener)
+        else:
+            df_restante = pd.DataFrame(columns=COLUMNAS_OPEN)
+
         df_restante.to_csv(open_path, index=False)
+        print(f"📄 Archivo actualizado con {len(df_restante)} posiciones restantes.")
     except Exception as e:
         print(f"❌ Error al guardar {open_path}: {e}")
 

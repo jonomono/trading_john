@@ -5,7 +5,7 @@ import pandas as pd
 def evaluate_trades(results_df: pd.DataFrame):
     """
     Calcula estadísticas clave del backtest.
-    
+
     :param results_df: DataFrame con las operaciones simuladas
     :return: Diccionario con métricas
     """
@@ -37,26 +37,24 @@ def evaluate_trades(results_df: pd.DataFrame):
         "max_drawdown": round(max_drawdown, 2)
     }
 
-
-# Ejemplo de uso
+# 🧪 Ejemplo de prueba (seguro)
 if __name__ == "__main__":
-    df = pd.read_csv("logs/backtest_results.csv")
-    metrics = evaluate_trades(df)
+    from logs.logger import log_backtest_summary
 
-    print("\n📊 Resultados del Backtest:")
-    for key, value in metrics.items():
-        print(f"{key}: {value}")
+    try:
+        df = pd.read_csv("logs/backtest_results.csv")
+        metrics = evaluate_trades(df)
 
-from logs.logger import log_backtest_summary
-from backtesting.evaluator import evaluate_trades
+        log_backtest_summary(
+            strategy_name="bullish_engulfing",
+            timeframe="1D→30m",
+            r_target=2.0,
+            metrics=metrics,
+            notes="Estrategia simple con tendencia uptrend"
+        )
 
-# Supón que ya tienes result_df (con las operaciones)
-metrics = evaluate_trades(result_df)
-
-log_backtest_summary(
-    strategy_name="bullish_engulfing",
-    timeframe="1D→30m",
-    r_target=2.0,
-    metrics=metrics,
-    notes="Estrategia simple con tendencia uptrend"
-)
+        print("\n📊 Resultados del Backtest:")
+        for key, value in metrics.items():
+            print(f"{key}: {value}")
+    except Exception as e:
+        print(f"❌ Error ejecutando prueba desde evaluator.py: {e}")
