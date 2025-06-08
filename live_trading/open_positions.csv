@@ -1,1 +1,2 @@
-datetime,symbol,entry_price,qty,sl,order_id,reason
+datetime,symbol,entry_price,sl,qty,order_id
+XRPUSDT,2.2616,2.2576,1.0,76070950,long

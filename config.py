@@ -20,3 +20,9 @@ try:
 except NameError:
     INTERVAL_MINUTES = 1  # valor por defecto si no está definido
 
+# Derivar pares Binance válidos (sin la barra)
+BINANCE_PAIRS = [p.replace("/", "") for p in PAIRS_TO_ANALYZE]
+
+# Intervalos de tiempo compatibles con Binance
+TIMEFRAMES = ["1m", "5m", "15m", "30m", "1H", "4H", "12H", "1D"]
+
